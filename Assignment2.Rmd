@@ -1,0 +1,135 @@
+---
+title: "Assignment2"
+author: "Ziya YİĞİT"
+date: "19 01 2022"
+output: word_document
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) #deleting plot warning messages
+```
+
+```{r include = FALSE}
+library(tidyverse)
+library(knitr)
+set.seed(2018556072)
+```
+
+### Take a random sample of 1000 observations from this data (you can use sample() function), and save this sample as a new data. Answer the following questions using this sample.
+
+```{r echo=FALSE}
+sampfile<-read.csv("D:/covid-data-2020.csv",sep= "\t")
+sampfile<- sampfile[sample(nrow(sampfile),1000), ]
+```
+
+### Q1 : Calculate the five-number summary statistics (minimum-Q1-median-Q3-maximum) of covid-19 daily new cases for each country within each month. (you can use quantile() function to get the quartiles)
+```{r echo=FALSE}
+five_number<-sampfile %>%
+  group_by(month,location) %>%
+  summarize(min=min(new_cases),
+            q1=quantile(new_cases,probs=0.25,na.rm=TRUE),
+            med=quantile(new_cases,probs=0.50,na.rm=TRUE),
+            q3=quantile(new_cases,probs=0.75,na.rm=TRUE),
+            max=max(new_cases))
+kable(head(five_number,15))
+```
+
+
+### Q2 : Find the highest daily cases and deaths separately for each country. 
+```{r echo=FALSE}
+highest_case_death<-sampfile %>%
+  group_by(location) %>%
+  summarize(max_case=max(new_cases,na.rm=TRUE),max_death=max(new_deaths,na.rm=TRUE)) %>%
+  arrange(desc(max_case))
+kable(highest_case_death) #all of Vatican's max_death datas are NA's so it returns -inf, Monaco had at least one 0 at it so it's 0.
+```
+
+
+### Q3 : Identify the month in which the mean daily cases is the highest for each country.
+```{r echo=FALSE}
+options(scipen = 100,digits = 5) # getting rid of scientific notations
+# not neccessary but makes it look better
+meandaily<-sampfile %>%
+  group_by(location,month) %>%
+  summarize(mean_of_dailycases=mean(new_cases,na.rm=TRUE)) %>%
+  arrange(desc(mean_of_dailycases))                       #we arranged most cases 
+meandaily<-distinct(meandaily,location, .keep_all = TRUE) #removed other locations with distinct, only top ones are left
+kable(meandaily)
+```
+
+
+### Q4 : Select 3 country and plot the distribution of daily cases by month. Use location as clusters (i.e., color=location) to show the difference between countries.
+```{r echo=FALSE}
+three_country<- filter(sampfile,location ==c("Turkey","Russia","United Kingdom"))
+ggplot(data=three_country, mapping=aes(x=month,y=new_cases,color=location)) +
+  geom_boxplot(na.rm=FALSE) +
+  scale_x_continuous(breaks = seq(0, 12, by = 1)) 
+
+```
+
+
+
+
+---
+### Take a random sample of 100 sentences from this data, then split these sentences into words and take each word as a member of a vector. After removing duplicated words (you can use unique() function to remove duplicated words), save this sample as a new data.
+```{r}
+sampfile<- sample(c(sentences),size=100)
+sampfile <- sampfile %>%
+  str_split(" ") %>%
+  simplify()
+
+sampfile<-str_replace_all(sampfile,"\\.","") #deleting ",.?"
+sampfile<-str_replace_all(sampfile,"\\,","")
+sampfile<-str_replace_all(sampfile,"\\?","")
+sampfile<-str_to_lower(sampfile)             
+sampfile<-unique(sampfile)
+
+```
+
+
+### Q1 : Find words which are starting with “a” and ending with “e”.
+```{r echo=FALSE}
+ae <- str_subset(sampfile, "^a")
+ae <- str_subset(ae, "e$")
+```
+Words which starts with a and ends with e are :
+`r ae`
+
+### Q2 : Calculate the number of words which have more than 3 vowels.
+```{r echo=FALSE}
+vowelcount<- sampfile[str_count(sampfile,"[aeiou]")>3]
+vowelcount_len<-length(vowelcount)
+```
+There are `r vowelcount_len` words which have more than 3 wovels.
+The words which have more than 3 vowels are :
+`r vowelcount`
+ 
+
+### Q3 : List the five longest word in your data
+```{r echo=FALSE}
+longestwords<-head(sampfile[order(str_count(sampfile),decreasing=TRUE)], 5)
+```
+Longest five words are :
+`r longestwords`
+
+### Q4 : Try to find word(s) which contain any of these words: age, any, day, exp, her, pro, the.
+```{r echo=FALSE}
+anyofthose <- sampfile[str_detect(sampfile, "her|any|day|exp|age|pro|the")]
+```
+Words which contain age, any, day, exp, her, pro, the are :
+`r anyofthose`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

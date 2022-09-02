@@ -1,0 +1,115 @@
+---
+title: "Assignment3"
+author: "Ziya YİĞİT"
+date: "19 01 2022"
+output: word_document
+---
+
+```{r include = FALSE}
+library(tidyverse)
+library(knitr)
+set.seed(2018556072)
+```
+
+### Q1 : Write a function that finds a prime number(s) given a set of numbers. Your function also provides prime factors of non-prime numbers. The function you will write should return the prime number(s) given in this vector and the non-prime number(s) with their prime factors.
+
+```{r}
+prime_func <- function(x) {
+  
+  primes <- c()
+  nonprimes <- c()
+  factors <- c()
+  
+  for (i in x) {
+    if (i == 2) {                   #for "2" 
+      primes <- c(primes, i)
+    } else if ( any(i %% 2:(i-1) == 0)) {   #i from 2 last number checking if we can divide the number
+      nonprimes <- c(nonprimes, i)          
+      
+      factors <- c()
+      a = 2
+      
+      while(i >= a){                #checking if number is smaller than a, then looking for prime factor
+        if(i %%a==0){               #if i mod a is 0 add it to factors
+          factors<- c(factors,a)    #divide i to a and check if there is lower factor(a-1)
+          i <- i/a
+          a <- a-1
+          
+        }
+        a <- a+1                    
+      }
+      
+      nonprimes <- c(nonprimes,"[" ,factors, "]")
+      
+    } else { 
+      primes <- c(primes ,i)
+    }
+  }
+  
+  
+  
+  cat("prime nums : " , primes, "\n")
+  cat("non prime nums  : ", nonprimes,"\n")
+}
+
+```
+Lets add test inputs 89, 107, 597, 931, 1083
+
+```{r include=FALSE}
+test <- c(89, 107, 597, 931, 1083)
+```
+
+
+The output that we are going to get is this:
+```{r echo=FALSE, comment=NA}
+prime_func(test)
+```
+
+
+---
+### Q2 : Write a function that finds the letter numbers of all words in a given text and sorts the text according to those numbers from words with few letters to words with many letters. Sort the words containing the same number of letters alphabetically.
+
+### For having text, you may use Sentences in tidyverse. Select 5 or 6 sentences randomly from Sentences.
+
+```{r}
+sentence_func <- function (x) {            #a function that prints lowest string length words in
+                                      # alphabetical order
+  x<- x %>%                           
+    str_split(" ") %>%
+    simplify()
+  
+  x<-str_replace_all(x,"\\.","")  #Deleting all ",.'?"
+  x<-str_replace_all(x,"\\,","")
+  x<-str_replace_all(x,"\\'","")
+  x<-str_replace_all(x,"\\?","")
+  x<-str_to_lower(x)
+  
+  lengthofwords=c() 
+  
+  for (i in x){                                     
+    lengthofwords = c(lengthofwords,str_length(i)) # finding length of all words
+    
+  }
+  
+  alphabetic_order<-sort(x)                                         #sort and order
+  final_order<-alphabetic_order[order(str_length(alphabetic_order))]
+  
+  cat(final_order)
+}
+```
+
+Let's select 5 or 6 random sentences from tidyverse sentences.
+
+```{r}
+sampfile<- sample(c(sentences),size=sample(5:7))
+```
+
+What we have is this: `r sampfile`
+
+
+The output is :
+```{r echo=FALSE, comment=NA}
+sentence_func(sampfile)
+```
+
+
